@@ -9,9 +9,36 @@ import {
 } from "./api";
 import { prettyPrintNumber, zip } from "./utils";
 
+// Marker class for known html-safe strings
+export class HtmlString extends String {}
+
+// Escape html special characters
+const escapeHtml = (html: string | HtmlString) => {
+  // already html-safe
+  if (html instanceof HtmlString) return html;
+
+  return html
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+};
+
 // Mark template literal as html string
-const html = (strings: TemplateStringsArray, ...values: any[]) =>
-  String.raw({ raw: strings }, ...values);
+const html = (
+  strings: TemplateStringsArray,
+  ...values: (string | HtmlString | string[] | HtmlString[])[]
+) => {
+  // escape passed in values
+  const htmlValues = values.map((fragment) => {
+    if (Array.isArray(fragment)) return fragment.map(escapeHtml).join("");
+    return escapeHtml(fragment);
+  });
+
+  // substitute the template literal and mark as html-safe
+  return new HtmlString(String.raw({ raw: strings }, ...htmlValues));
+};
 
 // Render population of Czech Republic
 export const showPopulation = async () => {
@@ -20,9 +47,9 @@ export const showPopulation = async () => {
   return html`<p>Population of Czech Republic: ${prettyPrintNumber(population)}</p>`;
 };
 
-const renderList = (items: string[]) => {
+const renderList = (items: (HtmlString | string)[]) => {
   return html`<ul class="list min-w-sm">
-    ${items.map((item) => html`<li class="list-row">${item}</li>`).join("\n")}
+    ${items.map((item) => html`<li class="list-row">${item}</li>`)}
   </ul>`;
 };
 

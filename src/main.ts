@@ -7,6 +7,7 @@ import {
   showCountriesCurrenciesDials,
   showFlag,
   showPopulation,
+  HtmlString,
 } from "./render";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
@@ -52,7 +53,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 </main>
 `;
 
-const handlers: Record<string, () => Promise<string>> = {
+const handlers: Record<string, () => Promise<HtmlString>> = {
   "population-cz": showPopulation,
   "cities-cz": showCities,
   "cities-cz-3": showFirst3Cities,
@@ -75,9 +76,9 @@ const clearResult = () => {
   RESULT.innerHTML = "";
 };
 
-const showResult = (html: string) => {
+const showResult = (html: HtmlString) => {
   showSpinner(false);
-  RESULT.innerHTML = html;
+  RESULT.innerHTML = html.toString();
 };
 
 const runHandler = async (handlerName: string) => {
